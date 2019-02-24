@@ -7,6 +7,8 @@ Obfuscation is a technique used by malicious software to avoid detection. This t
 
 ## Usage
 
-1. Import 
-
-> PSDeobfuscate \.obfuscated_script.ps1
+1. Open a new PowerShell instance.
+2. Import PowerDrive module:
+> Import-Module PowerDrive.psm1
+3. Run tool:
+> PowerDrive \.obfuscated_script.ps1
