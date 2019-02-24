@@ -11,4 +11,4 @@ Obfuscation is a technique used by malicious software to avoid detection. This t
 2. Import PowerDrive module:
 > Import-Module PowerDrive.psm1
 3. Run tool:
-> PowerDrive \.obfuscated_script.ps1
+> PowerDrive .\obfuscated_script.ps1
