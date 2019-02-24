@@ -1,2 +1,1 @@
-# PowerDrive
-A tool for deobfuscating PowerShell scripts
+# PowerDrive (a tool for deobfuscating PowerShell script)
