@@ -28,7 +28,8 @@ $Invoke_Expression_Override = @'
 function Invoke-Expression() {
     param(
         [Parameter(
-			Mandatory = $True)]
+			Mandatory = $False,
+			ValueFromPipeline=$True)]
         [string]$ObfuscatedScript
     )
 	
@@ -633,16 +634,16 @@ function FromArrayToString() {
 	return $String
 }
 
-function CommandIsObfuscated() {
+function ScriptIsObfuscated() {
 	param(
         [Parameter(
 			Mandatory = $True)]
-        [string]$Command
+        [string]$Script
     )
 	
 	$Found = $False
-	Foreach($Line in $Command.Split("`n")) {
-		$Regex = [Regex]::Match($Command, "(\{\d\}\'\s*-f)|(\'(.*?)\'\s*\+\s*\'(.*?)\')")
+	Foreach($Line in $Script.Split("`n")) {
+		$Regex = [Regex]::Match($Script, "(\{\d\}\'\s*-f)|(\'(.*?)\'\s*\+\s*\'(.*?)\')")
 		if($Regex.Success) {
 			$Found = $True
 		}
@@ -651,23 +652,22 @@ function CommandIsObfuscated() {
 	return $Found
 }
 
-function DeobfuscateCommand() {
+function DeobfuscateScript() {
     param(
         [Parameter(
 			Mandatory = $True)]
-        [string]$Command
+        [string]$Script
     )
 	
-	$Command = $Command -replace "\'\s*\+\s*\'", ""
-	$Command = $Command -replace '\"\s*\+s*\"', ""
-	$Command = $Command -replace "``", ""
-	
-	$Regex = [Regex]::Match($Command, "\'\{(.*?)\}\'\s*-f")
+	$Regex = [Regex]::Match($Script, "(\'|\"")\{(.*?)\}(\'|\"")\s*-f")
 	if($Regex.Success) {
-		$Command = RemoveStringFormatting $Command
+		$Script = RemoveStringFormatting $Script
 	}
 	
-	return $Command
+	$Script = $Script -replace "(\'|\"")\s*\+\s*(\'|\"")", ""
+	$Script = $Script -replace "``", ""
+	
+	return $Script
 }
 
 function RemoveStringFormatting() {
@@ -687,7 +687,7 @@ function RemoveStringFormatting() {
 	
 	$NewScript = ""
 	
-	$Regex = [Regex]::Matches($Script, "(.*?)\(\'\{(.*?)\}\'\s*-f\s*\'(.*?)\'\)")
+	$Regex = [Regex]::Matches($Script, "(.*?)\(\'\{(.*?)\}\'\s*-f\s*(\'\"")(.*?)(\'|\"")\)")
 	Foreach($Match in $Regex) {
 		$FormattedStringPositionsPart = "{$($Match.Groups[2].Value)}"
 		$FormattedStringWordsPart = "'$($Match.Groups[3].Value)'"
@@ -695,7 +695,7 @@ function RemoveStringFormatting() {
 		$NewScript += $Match.Groups[1].Value + "'" + $FormattedString + "'"
 	}
 	
-	$LastPartOfScript = $Script -replace "(.*?)\'\{(.*?)\}\'\s*-f\s*\'(.*?)\'\)", ""
+	$LastPartOfScript = $Script -replace "(.*?)(\'\"")\{(.*?)\}(\'|\"")\s*-f\s*(\'|\"")(.*?)(\'|\"")\)", ""
 	
 	$Script = $NewScript + $LastPartOfScript
 	
@@ -722,7 +722,7 @@ function RemoveOneStringFormatting() {
 	#>
 	
 	$RegexPositions = [Regex]::Matches($FormattedStringPositionsPart, "\{(.*?)\}")
-	$RegexWords = [Regex]::Matches($FormattedStringWordsPart, "\'(.*?)\'")
+	$RegexWords = [Regex]::Matches($FormattedStringWordsPart, "(\'|\"")(.*?)(\'|\"")")
 	
 	$FormattedStringWordsPositions = GetFormattingStringPositions $RegexPositions
 	$FormattedStringWords = GetFormattingStringWords $RegexWords
@@ -808,7 +808,7 @@ function FormatSyntaxErrorOutput() {
 	param(
 		[Parameter(
 			Mandatory = $True)]
-		[string]$CommandWithSyntaxErrors,
+		[string]$ScriptWithSyntaxErrors,
         [Parameter(
 			Mandatory = $False)]
         [string]$ObfuscationLayersOutput
@@ -817,7 +817,7 @@ function FormatSyntaxErrorOutput() {
 	<#
 	.DESCRIPTION
 	Give specific format to Syntax Error output.
-	.PARAMETER CommandWithSyntaxErrors
+	.PARAMETER ScriptWithSyntaxErrors
 	.PARAMETER ObfuscationLayersOutput
 	.OUTPUTS
 	Output with specific format.
@@ -825,10 +825,10 @@ function FormatSyntaxErrorOutput() {
 	
 	$Heading = "#"*30 + " Syntax error " + "#"*30
 	if($ObfuscationLayersOutput -eq "") {
-		$Output = "$($Heading)`n$($CommandWithSyntaxErrors)"
+		$Output = "$($Heading)`n$($ScriptWithSyntaxErrors)"
 	}
 	else {
-		$Output = "$($ObfuscationLayersOutput)`n$($Heading)`n$($CommandWithSyntaxErrors)"
+		$Output = "$($ObfuscationLayersOutput)`n$($Heading)`n$($ScriptWithSyntaxErrors)"
 	}
 	
 	return $Output
@@ -914,7 +914,7 @@ function FormatExecutionErrorOutput() {
         [string]$ErrorMessage,
 		[Parameter(
 			Mandatory = $True)]
-        [string]$Command
+        [string]$Script
     )
 	
 	<#
@@ -922,7 +922,7 @@ function FormatExecutionErrorOutput() {
 	Give specific format to Syntax Error output.
 	.PARAMETER ObfuscationLayersOutput
 	.PARAMETER ErrorMessage
-	.PARAMETER Command
+	.PARAMETER Script
 	.OUTPUTS
 	Output with specific format.
 	#>
@@ -1031,8 +1031,8 @@ function PowerDrive {
 			if(ThereIsAnErrorDuringScriptExecution $DeobfuscationOutput) {
 				$ErrorOutput = GetErrorInfoFromOutput $DeobfuscationOutput
 				$ErrorType = $ErrorOutput | Select-Object -Index 0
-				if(CommandIsObfuscated $ObfuscatedScriptModified) {
-					$ObfuscatedScriptModified = DeobfuscateCommand $ObfuscatedScriptModified
+				if(ScriptIsObfuscated $ObfuscatedScriptModified) {
+					$ObfuscatedScriptModified = DeobfuscateScript $ObfuscatedScriptModified
 					$ObfuscationLayers.Add($ObfuscatedScriptModified)
 				}
 				$ObfuscationLayersOutput = GetObfuscationLayers $ObfuscationLayers
@@ -1130,8 +1130,8 @@ function PowerDrive {
 	
 	#Last Layer of offuscation
 	$ObfuscatedScript = $ObfuscationLayers[-1]
-	if(CommandIsObfuscated $ObfuscatedScript) {
-		$ObfuscatedScript = DeobfuscateCommand $ObfuscatedScript
+	if(ScriptIsObfuscated $ObfuscatedScript) {
+		$ObfuscatedScript = DeobfuscateScript $ObfuscatedScript
 		$ObfuscationLayers.Add($ObfuscatedScript)
 	}
 	if(ThereIsNullOutputRedirection $ObfuscatedScript) {
