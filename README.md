@@ -1,5 +1,5 @@
 # PowerDrive
-## A tool for de-obfuscating PowerShell scripts
+## A Tool for De-Obfuscating PowerShell Scripts
 
 Obfuscation is a technique used by malicious software to avoid detection. This tool allows de-obfuscating PowerShell scripts, even after multiple obfuscation attempts.
 
@@ -8,9 +8,9 @@ Obfuscation is a technique used by malicious software to avoid detection. This t
 ## How to use
 
 1. Open a new PowerShell instance.
-2. Import PowerDrive module:
+2. Import the PowerDrive module:
 > Import-Module PowerDrive.psm1
-3. Run the tool (the file path containing the obfuscated PowerShell script must be passed):
+3. Run PowerDrive (the file path containing the obfuscated PowerShell script must be passed):
 > PowerDrive .\obfuscated_script.ps1
 
 ## Additional information
