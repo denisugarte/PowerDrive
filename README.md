@@ -16,6 +16,6 @@ Obfuscation is a technique used by malicious software to avoid detection. This t
 ## Additional information
 This tool has been developed in the context of a scientific paper that is going to be presented at the 16th Conference on Detection of Intrusions and Malware & Vulnerability Assessment (DIMVA) [1]. 
 
-In particular, the file obfuscated-scripts.txt includes the 4642 malicious obfuscated scripts that have been analyzed by PowerDrive, along with the de-obfuscation results. Moreover, an example showing a multi-layer de-obfuscation process is located in the file named *“multilayer_deobfuscation.txt”*. This example shows the de-obfuscation process of a script that combines string-related obfuscation, encoding and compression.
+In particular, the file deobfuscated-scripts.txt includes the 4642 malicious obfuscated scripts that have been analyzed by PowerDrive, along with the de-obfuscation results. Moreover, an example showing a multi-layer de-obfuscation process is located in the file named *“multilayer_deobfuscation.txt”*. This example shows the de-obfuscation process of a script that combines string-related obfuscation, encoding and compression.
 
 [1] Denis Ugarte, Davide Maiorca, Fabrizio Cara and Giorgio Giacinto. PowerDrive: Accurate De-Obfuscation and Analysis of PowerShell Malware. To appear in the 16th Conference on Detection of Intrusions and Malware & Vulnerability Assessment (DIMVA), Gotheborg, Sweden, 2019. 
